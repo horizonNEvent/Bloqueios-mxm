@@ -1,0 +1,199 @@
+{
+  "bases": [
+    {
+      "nome": "TACKER",
+      "url": "https://mxmhml-tacker.rsmbrasil.com.br/?grupo=TACKERHOM",
+      "descricao": "Base Tacker"
+    },
+    {
+      "nome": "RSM",
+      "url": "https://mxmhml-rsm.rsmbrasil.com.br/?grupo=RSMHOM",
+      "descricao": "Base RSM"
+    },
+    {
+      "nome": "BGRS",
+      "url": "https://mxmhml-bgrs.rsmbrasil.com.br/?grupo=BGRSHOM",
+      "descricao": "Base BGRS"
+    },
+    {
+      "nome": "CNOOC",
+      "url": "https://mxmhml-cnooc.rsmbrasil.com.br/?grupo=CNOOCHOM",
+      "descricao": "Base CNOOC"
+    },
+    {
+      "nome": "GGT",
+      "url": "https://mxmhml-ggt.rsmbrasil.com.br/?grupo=GGTHOM",
+      "descricao": "Base GGT"
+    },
+    {
+      "nome": "MARLIN",
+      "url": "https://mxmhml-marlin.rsmbrasil.com.br/?grupo=MARLINHOM",
+      "descricao": "Base Marlin"
+    },
+    {
+      "nome": "KERING",
+      "url": "https://mxmhml-kering.rsmbrasil.com.br/?grupo=KERINGHOM",
+      "descricao": "Base Kering"
+    },
+    {
+      "nome": "BARU",
+      "url": "https://mxmhml-baru.rsmbrasil.com.br/?grupo=BARUHOM",
+      "descricao": "Base Baru"
+    },
+    {
+      "nome": "IRI",
+      "url": "https://mxmhml-iri.rsmbrasil.com.br/?grupo=IRIHOM",
+      "descricao": "Base IRI"
+    },
+    {
+      "nome": "FIBERSTAR",
+      "url": "https://mxmhml-fiberstar.rsmbrasil.com.br/?grupo=FIBERSTARHOM",
+      "descricao": "Base Fiberstar"
+    },
+    {
+      "nome": "RIOENERGY",
+      "url": "https://mxmhml-rioenergy.rsmbrasil.com.br/?grupo=RIOENERGYHOM",
+      "descricao": "Base Rio Energy"
+    },
+    {
+      "nome": "ACAL003",
+      "url": "https://mxmhml-acal003.rsmbrasil.com.br/?grupo=ACAL003HOM",
+      "descricao": "Base Acal003"
+    },
+    {
+      "nome": "ALGO",
+      "url": "https://mxmhml-algo.rsmbrasil.com.br/?grupo=ALGOHOM",
+      "descricao": "Base Algo"
+    },
+    {
+      "nome": "BAMBU",
+      "url": "https://mxmhml-bambu.rsmbrasil.com.br/?grupo=BAMBUHOM",
+      "descricao": "Base Bambu"
+    },
+    {
+      "nome": "CIENA",
+      "url": "https://mxmhml-ciena.rsmbrasil.com.br/?grupo=CIENAHOM",
+      "descricao": "Base Ciena"
+    },
+    {
+      "nome": "COVANCE",
+      "url": "https://mxmhml-covance.rsmbrasil.com.br/?grupo=COVANCEHOM",
+      "descricao": "Base Covance"
+    },
+    {
+      "nome": "DFJ",
+      "url": "https://mxmhml-dfj.rsmbrasil.com.br/?grupo=DFJHOM",
+      "descricao": "Base DFJ"
+    },
+    {
+      "nome": "FISHER",
+      "url": "https://mxmhml-fisher.rsmbrasil.com.br/?grupo=FISHERHOM",
+      "descricao": "Base Fisher"
+    },
+    {
+      "nome": "FPB",
+      "url": "https://mxmhml-fpb.rsmbrasil.com.br/?grupo=FPBHOM",
+      "descricao": "Base FPB"
+    },
+    {
+      "nome": "HCL",
+      "url": "https://mxmhml-hcl.rsmbrasil.com.br/?grupo=HCLHOM",
+      "descricao": "Base HCL"
+    },
+    {
+      "nome": "MANABI",
+      "url": "https://mxmhml-manabi.rsmbrasil.com.br/?grupo=MANABIHOM",
+      "descricao": "Base Manabi"
+    },
+    {
+      "nome": "SILVER",
+      "url": "https://mxmhml-silver.rsmbrasil.com.br/?grupo=SILVERHOM",
+      "descricao": "Base Silver"
+    },
+    {
+      "nome": "AGILETOUGHT",
+      "url": "https://mxmhml-agiletought.rsmbrasil.com.br/?grupo=AGILETOUGHTHOM",
+      "descricao": "Base Agiletought"
+    },
+    {
+      "nome": "ARTHREX",
+      "url": "https://mxmhml-arthrex.rsmbrasil.com.br/?grupo=ARTHREXHOM",
+      "descricao": "Base Arthrex"
+    },
+    {
+      "nome": "YSL",
+      "url": "https://mxmhml-ysl.rsmbrasil.com.br/?grupo=YSLHOM",
+      "descricao": "Base YSL"
+    },
+    {
+      "nome": "HARRIS",
+      "url": "https://mxmhml-harris.rsmbrasil.com.br/?grupo=HARRISHOM",
+      "descricao": "Base Harris"
+    },
+    {
+      "nome": "FIREWORK",
+      "url": "https://mxmhml-firework.rsmbrasil.com.br/?grupo=FIREWORKHOM",
+      "descricao": "Base Firework"
+    },
+    {
+      "nome": "VOGEL",
+      "url": "https://mxmhml-vogel.rsmbrasil.com.br/?grupo=VOGELHOM",
+      "descricao": "Base Vogel"
+    },
+    {
+      "nome": "FCC",
+      "url": "https://mxmhml-fcc.rsmbrasil.com.br/?grupo=FCCHOM",
+      "descricao": "Base FCC"
+    },
+    {
+      "nome": "MASTERBR",
+      "url": "https://mxmhml-masterbr.rsmbrasil.com.br/?grupo=MASTERBRHOM",
+      "descricao": "Base Masterbr"
+    },
+    {
+      "nome": "JTI",
+      "url": "https://mxmhml-jti.rsmbrasil.com.br/?grupo=JTIHOM",
+      "descricao": "Base JTI"
+    },
+    {
+      "nome": "GOGO",
+      "url": "https://mxmhml-gogo.rsmbrasil.com.br/?grupo=GOGOHOM",
+      "descricao": "Base Gogo"
+    },
+    {
+      "nome": "SCX",
+      "url": "https://mxmhml-scx.rsmbrasil.com.br/?grupo=SCXHOM",
+      "descricao": "Base SCX"
+    },
+    {
+      "nome": "MUBADALA",
+      "url": "https://mxmhml-mubadala.rsmbrasil.com.br/?grupo=MUBADALAHOM",
+      "descricao": "Base Mubadala"
+    },
+    {
+      "nome": "EXPONOVIAS",
+      "url": "https://mxmhml-exponovias.rsmbrasil.com.br/?grupo=EXPONOVIASHOM",
+      "descricao": "Base Exponovias"
+    },
+    {
+      "nome": "TSYS",
+      "url": "https://mxmhml-tsys.rsmbrasil.com.br/?grupo=TSYSHOM",
+      "descricao": "Base TSYS"
+    },
+    {
+      "nome": "BALEEN",
+      "url": "https://mxmhml-baleen.rsmbrasil.com.br/?grupo=BALEENHOM",
+      "descricao": "Base Baleen"
+    },
+    {
+      "nome": "INFRABR",
+      "url": "https://mxmhml-infrabr.rsmbrasil.com.br/?grupo=INFRABRHOM",
+      "descricao": "Base Infrabr"
+    },
+    {
+      "nome": "TGS",
+      "url": "https://mxmhml-tgs.rsmbrasil.com.br/?grupo=TGSHOM",
+      "descricao": "BASE da TGS"
+    }
+  ]
+}
