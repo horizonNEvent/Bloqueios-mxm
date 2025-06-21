@@ -12,6 +12,8 @@ from PyQt6.QtGui import QFont, QIcon
 from .gerenciador_bases import GerenciadorBases
 from .janela_gerenciar_bases import JanelaGerenciarBases
 from .agendador import agendador_global, log_emitter
+from .historico import historico_global
+from .janela_historico import JanelaHistorico
 
 class BloqueioThread(QThread):
     """Thread para executar o processo de bloqueio em background"""
@@ -206,9 +208,13 @@ class InterfaceBloqueio(QMainWindow):
         """)
         self.botao_gerenciar_bases.clicked.connect(self.abrir_gerenciar_bases)
         
+        self.botao_historico = QPushButton("Ver Histórico")
+        self.botao_historico.clicked.connect(self.abrir_historico)
+        
         layout_base_botoes.addWidget(label_base)
         layout_base_botoes.addStretch()
         layout_base_botoes.addWidget(self.botao_gerenciar_bases)
+        layout_base_botoes.addWidget(self.botao_historico)
         layout.addLayout(layout_base_botoes)
 
         # Filtro de busca de bases
@@ -330,24 +336,22 @@ class InterfaceBloqueio(QMainWindow):
             self.botao_bloquear.setText("Bloquear Usuário Agora")
             
     def iniciar_bloqueio(self):
-        """Inicia ou agenda o processo de bloqueio."""
-        usuario = self.campo_usuario.text().strip()
+        self.usuario_atual = self.campo_usuario.text().strip()
         
-        if not usuario:
+        if not self.usuario_atual:
             QMessageBox.warning(self, "Aviso", "Por favor, digite o nome do usuário.")
             return
         
-        bases_selecionadas = []
+        self.bases_atuais = []
         for i in range(self.lista_bases.count()):
             item = self.lista_bases.item(i)
             if item.checkState() == Qt.CheckState.Checked:
-                bases_selecionadas.append(item.data(Qt.ItemDataRole.UserRole))
+                self.bases_atuais.append(item.data(Qt.ItemDataRole.UserRole))
         
-        if not bases_selecionadas:
+        if not self.bases_atuais:
             QMessageBox.warning(self, "Aviso", "Selecione pelo menos uma base.")
             return
             
-        # Lógica de agendamento
         if self.grupo_agendamento.isChecked():
             data_hora = self.campo_data_hora.dateTime().toPyDateTime()
             
@@ -355,21 +359,21 @@ class InterfaceBloqueio(QMainWindow):
                 QMessageBox.warning(self, "Aviso", "A data e hora do agendamento devem ser no futuro.")
                 return
                 
-            self.agendador.agendar_bloqueio(data_hora, usuario, bases_selecionadas)
-            QMessageBox.information(self, "Sucesso", f"Bloqueio para '{usuario}' agendado com sucesso para {data_hora.strftime('%d/%m/%Y às %H:%M')}.")
+            self.agendador.agendar_bloqueio(data_hora, self.usuario_atual, self.bases_atuais)
+            QMessageBox.information(self, "Sucesso", f"Bloqueio para '{self.usuario_atual}' agendado com sucesso para {data_hora.strftime('%d/%m/%Y às %H:%M')}.")
             self.campo_usuario.clear()
             
-        else: # Execução imediata
+        else:
             self.set_interface_enabled(False)
             self.progress_bar.setVisible(True)
             self.progress_bar.setRange(0, 0)
             self.area_log.clear()
             
-            self.thread_bloqueio = BloqueioThread(usuario, bases_selecionadas)
+            self.thread_bloqueio = BloqueioThread(self.usuario_atual, self.bases_atuais)
             self.thread_bloqueio.log_signal.connect(self.adicionar_log)
             self.thread_bloqueio.finished_signal.connect(self.processar_resultado)
             self.thread_bloqueio.start()
-            
+        
     def adicionar_log(self, mensagem):
         self.area_log.append(f"[{self.get_timestamp()}] {mensagem}")
         self.area_log.verticalScrollBar().setValue(self.area_log.verticalScrollBar().maximum())
@@ -379,6 +383,9 @@ class InterfaceBloqueio(QMainWindow):
         self.progress_bar.setVisible(False)
         self.adicionar_log(mensagem)
         
+        status_str = "Sucesso" if sucesso else "Falha"
+        historico_global.adicionar_registro(self.usuario_atual, self.bases_atuais, status_str, mensagem)
+
         if sucesso:
             QMessageBox.information(self, "Sucesso", mensagem)
         else:
@@ -406,6 +413,11 @@ class InterfaceBloqueio(QMainWindow):
             pass # Ignora o erro se o sinal não estiver conectado
         self.agendador.desligar()
         event.accept()
+
+    def abrir_historico(self):
+        """Abre a janela de histórico."""
+        janela = JanelaHistorico(self)
+        janela.exec()
 
 
 def main():

@@ -6,6 +6,7 @@ import os
 import uuid
 import json
 from PyQt6.QtCore import QObject, pyqtSignal
+from .historico import historico_global
 
 class AgendadorLogger(QObject):
     log_signal = pyqtSignal(str)
@@ -74,9 +75,11 @@ class Agendador:
             log_emitter.log_signal.emit(f"[AGENDADO] {msg}")
 
         def on_finish(sucesso, msg_final):
+            status_str = "Sucesso" if sucesso else "Falha"
             log_emitter.log_signal.emit(f"--- [AGENDADO] FINALIZADO (Job: {job_id}) ---")
-            on_log(f"Resultado: {'Sucesso' if sucesso else 'Falha'}")
+            on_log(f"Resultado: {status_str}")
             on_log(msg_final)
+            historico_global.adicionar_registro(usuario, bases, status_str, msg_final)
             
         try:
             # Criamos uma thread para não bloquear o agendador
