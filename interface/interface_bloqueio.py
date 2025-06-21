@@ -1,14 +1,17 @@
 import sys
 import json
 import threading
+from datetime import datetime
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QLabel, QLineEdit, QPushButton, 
                              QTextEdit, QMessageBox, QProgressBar, QDialog, QCompleter,
-                             QListWidget, QListWidgetItem)
-from PyQt6.QtCore import QThread, pyqtSignal, Qt
+                             QListWidget, QListWidgetItem, QCheckBox, QDateTimeEdit,
+                             QGroupBox)
+from PyQt6.QtCore import QThread, pyqtSignal, Qt, QDateTime
 from PyQt6.QtGui import QFont, QIcon
 from .gerenciador_bases import GerenciadorBases
 from .janela_gerenciar_bases import JanelaGerenciarBases
+from .agendador import agendador_global, log_emitter
 
 class BloqueioThread(QThread):
     """Thread para executar o processo de bloqueio em background"""
@@ -166,11 +169,13 @@ class InterfaceBloqueio(QMainWindow):
     def __init__(self):
         super().__init__()
         self.gerenciador_bases = GerenciadorBases()
+        self.agendador = agendador_global
         self.initUI()
+        self.setWindowTitle("Sistema de Bloqueio de Usuários")
+        log_emitter.log_signal.connect(self.adicionar_log)
         
     def initUI(self):
-        self.setWindowTitle("Sistema de Bloqueio de Usuários")
-        self.setGeometry(100, 100, 700, 700)
+        self.setGeometry(100, 100, 700, 800)
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -236,7 +241,23 @@ class InterfaceBloqueio(QMainWindow):
         self.campo_usuario.setPlaceholderText("Digite o nome do usuário...")
         layout.addWidget(self.campo_usuario)
         
-        self.botao_bloquear = QPushButton("Bloquear Usuário")
+        # Grupo de Agendamento
+        self.grupo_agendamento = QGroupBox("Agendamento")
+        self.grupo_agendamento.setCheckable(True)
+        self.grupo_agendamento.setChecked(False)
+        self.grupo_agendamento.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.grupo_agendamento.toggled.connect(self.toggle_agendamento)
+        
+        layout_agendamento = QHBoxLayout(self.grupo_agendamento)
+        label_data_hora = QLabel("Data e Hora do Bloqueio:")
+        self.campo_data_hora = QDateTimeEdit()
+        self.campo_data_hora.setDateTime(QDateTime.currentDateTime().addSecs(60))
+        self.campo_data_hora.setCalendarPopup(True)
+        self.campo_data_hora.setDisplayFormat("dd/MM/yyyy HH:mm:ss")
+        layout_agendamento.addWidget(label_data_hora)
+        layout_agendamento.addWidget(self.campo_data_hora)
+        
+        self.botao_bloquear = QPushButton("Bloquear Usuário Agora")
         self.botao_bloquear.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         self.botao_bloquear.setStyleSheet("""
             QPushButton {
@@ -248,6 +269,7 @@ class InterfaceBloqueio(QMainWindow):
             QPushButton:disabled { background-color: #bdc3c7; color: #7f8c8d; }
         """)
         self.botao_bloquear.clicked.connect(self.iniciar_bloqueio)
+        layout.addWidget(self.grupo_agendamento)
         layout.addWidget(self.botao_bloquear)
         
         self.progress_bar = QProgressBar()
@@ -265,6 +287,7 @@ class InterfaceBloqueio(QMainWindow):
         self.thread_bloqueio = None
         
         self.carregar_bases()
+        self.toggle_agendamento(False)
         
     def carregar_bases(self):
         """Carrega as bases na lista com checkboxes"""
@@ -299,7 +322,15 @@ class InterfaceBloqueio(QMainWindow):
         janela.exec()
         self.carregar_bases()
         
+    def toggle_agendamento(self, checked):
+        """Alterna o texto do botão com base no agendamento."""
+        if checked:
+            self.botao_bloquear.setText("Agendar Bloqueio")
+        else:
+            self.botao_bloquear.setText("Bloquear Usuário Agora")
+            
     def iniciar_bloqueio(self):
+        """Inicia ou agenda o processo de bloqueio."""
         usuario = self.campo_usuario.text().strip()
         
         if not usuario:
@@ -316,17 +347,29 @@ class InterfaceBloqueio(QMainWindow):
             QMessageBox.warning(self, "Aviso", "Selecione pelo menos uma base.")
             return
             
-        # Desabilitar interface
-        self.set_interface_enabled(False)
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setRange(0, 0)
-        self.area_log.clear()
-        
-        self.thread_bloqueio = BloqueioThread(usuario, bases_selecionadas)
-        self.thread_bloqueio.log_signal.connect(self.adicionar_log)
-        self.thread_bloqueio.finished_signal.connect(self.processar_resultado)
-        self.thread_bloqueio.start()
-        
+        # Lógica de agendamento
+        if self.grupo_agendamento.isChecked():
+            data_hora = self.campo_data_hora.dateTime().toPyDateTime()
+            
+            if data_hora <= datetime.now():
+                QMessageBox.warning(self, "Aviso", "A data e hora do agendamento devem ser no futuro.")
+                return
+                
+            self.agendador.agendar_bloqueio(data_hora, usuario, bases_selecionadas)
+            QMessageBox.information(self, "Sucesso", f"Bloqueio para '{usuario}' agendado com sucesso para {data_hora.strftime('%d/%m/%Y às %H:%M')}.")
+            self.campo_usuario.clear()
+            
+        else: # Execução imediata
+            self.set_interface_enabled(False)
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setRange(0, 0)
+            self.area_log.clear()
+            
+            self.thread_bloqueio = BloqueioThread(usuario, bases_selecionadas)
+            self.thread_bloqueio.log_signal.connect(self.adicionar_log)
+            self.thread_bloqueio.finished_signal.connect(self.processar_resultado)
+            self.thread_bloqueio.start()
+            
     def adicionar_log(self, mensagem):
         self.area_log.append(f"[{self.get_timestamp()}] {mensagem}")
         self.area_log.verticalScrollBar().setValue(self.area_log.verticalScrollBar().maximum())
@@ -350,10 +393,19 @@ class InterfaceBloqueio(QMainWindow):
         self.botao_gerenciar_bases.setEnabled(enabled)
         self.botao_selecionar_todas.setEnabled(enabled)
         self.botao_desselecionar_todas.setEnabled(enabled)
+        self.grupo_agendamento.setEnabled(enabled)
 
     def get_timestamp(self):
-        from datetime import datetime
         return datetime.now().strftime("%H:%M:%S")
+
+    def closeEvent(self, event):
+        """Garante que o agendador seja desligado corretamente."""
+        try:
+            log_emitter.log_signal.disconnect(self.adicionar_log)
+        except TypeError:
+            pass # Ignora o erro se o sinal não estiver conectado
+        self.agendador.desligar()
+        event.accept()
 
 
 def main():
