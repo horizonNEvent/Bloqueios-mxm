@@ -48,28 +48,28 @@ class Agendador:
             self.scheduler.start()
             print("Agendador iniciado.")
 
-    def agendar_bloqueio(self, data_hora: datetime, usuario: str, bases: list):
+    def agendar_bloqueio(self, data_hora: datetime, usuario: str, bases: list, ambiente: str):
         """Agenda uma nova tarefa de bloqueio."""
         job_id = str(uuid.uuid4())
         
-        log_emitter.log_signal.emit(f"Agendando bloqueio para {usuario} em {data_hora.strftime('%d/%m/%Y %H:%M')}")
+        log_emitter.log_signal.emit(f"Agendando bloqueio para {usuario} em {data_hora.strftime('%d/%m/%Y %H:%M')} no ambiente {ambiente}")
         
         self.scheduler.add_job(
             self.executar_bloqueio_agendado,
             'date',
             run_date=data_hora,
-            args=[job_id, usuario, bases],
+            args=[job_id, usuario, bases, ambiente],
             id=job_id,
-            name=f"Bloqueio de {usuario}"
+            name=f"Bloqueio de {usuario} ({ambiente})"
         )
         return job_id
 
     @staticmethod
-    def executar_bloqueio_agendado(job_id: str, usuario: str, bases: list):
+    def executar_bloqueio_agendado(job_id: str, usuario: str, bases: list, ambiente: str):
         """Função que será executada pela tarefa agendada."""
         from interface.interface_bloqueio import BloqueioThread
 
-        log_emitter.log_signal.emit(f"--- [AGENDADO] INICIANDO BLOQUEIO PARA '{usuario}' (Job: {job_id}) ---")
+        log_emitter.log_signal.emit(f"--- [AGENDADO] INICIANDO BLOQUEIO PARA '{usuario}' (Job: {job_id}) no ambiente {ambiente} ---")
 
         def on_log(msg):
             log_emitter.log_signal.emit(f"[AGENDADO] {msg}")
@@ -79,7 +79,7 @@ class Agendador:
             log_emitter.log_signal.emit(f"--- [AGENDADO] FINALIZADO (Job: {job_id}) ---")
             on_log(f"Resultado: {status_str}")
             on_log(msg_final)
-            historico_global.adicionar_registro(usuario, bases, status_str, msg_final)
+            historico_global.adicionar_registro(usuario, bases, ambiente, status_str, msg_final)
             
         try:
             # Criamos uma thread para não bloquear o agendador

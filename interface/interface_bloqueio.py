@@ -172,6 +172,7 @@ class InterfaceBloqueio(QMainWindow):
         super().__init__()
         self.gerenciador_bases = GerenciadorBases()
         self.agendador = agendador_global
+        self.ambiente_atual = "PROD"  # Ambiente padrão alterado para PROD
         self.initUI()
         self.setWindowTitle("Sistema de Bloqueio de Usuários")
         log_emitter.log_signal.connect(self.adicionar_log)
@@ -191,6 +192,18 @@ class InterfaceBloqueio(QMainWindow):
         titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         titulo.setStyleSheet("color: #2c3e50; margin-bottom: 10px;")
         layout.addWidget(titulo)
+        
+        # Seletor de Ambiente
+        layout_ambiente = QHBoxLayout()
+        label_ambiente = QLabel("Ambiente:")
+        self.switch_ambiente = QCheckBox("PROD")
+        self.switch_ambiente.setToolTip("Alterne entre ambiente de Produção (ligado) e Homologação (desligado)")
+        self.switch_ambiente.setChecked(True) # Inicia marcado como PROD
+        self.switch_ambiente.stateChanged.connect(self.alternar_ambiente)
+        layout_ambiente.addWidget(label_ambiente)
+        layout_ambiente.addWidget(self.switch_ambiente)
+        layout_ambiente.addStretch()
+        layout.addLayout(layout_ambiente)
         
         # Layout horizontal para base e botão gerenciar
         layout_base_botoes = QHBoxLayout()
@@ -295,11 +308,21 @@ class InterfaceBloqueio(QMainWindow):
         self.carregar_bases()
         self.toggle_agendamento(False)
         
+    def alternar_ambiente(self, state):
+        """Alterna o ambiente e recarrega a lista de bases."""
+        if state == Qt.CheckState.Checked.value:
+            self.ambiente_atual = "PROD"
+        else:
+            self.ambiente_atual = "HML"
+        self.carregar_bases()
+        
     def carregar_bases(self):
-        """Carrega as bases na lista com checkboxes"""
+        """Carrega e filtra as bases na lista com checkboxes."""
         self.lista_bases.clear()
         bases = self.gerenciador_bases.obter_bases()
-        bases_ordenadas = sorted(bases, key=lambda b: b['nome'])
+        
+        bases_filtradas = [b for b in bases if b.get('ambiente', 'HML').upper() == self.ambiente_atual]
+        bases_ordenadas = sorted(bases_filtradas, key=lambda b: b['nome'])
         
         for base in bases_ordenadas:
             item = QListWidgetItem(f"{base['nome']} - {base.get('descricao', '')}")
@@ -359,8 +382,8 @@ class InterfaceBloqueio(QMainWindow):
                 QMessageBox.warning(self, "Aviso", "A data e hora do agendamento devem ser no futuro.")
                 return
                 
-            self.agendador.agendar_bloqueio(data_hora, self.usuario_atual, self.bases_atuais)
-            QMessageBox.information(self, "Sucesso", f"Bloqueio para '{self.usuario_atual}' agendado com sucesso para {data_hora.strftime('%d/%m/%Y às %H:%M')}.")
+            self.agendador.agendar_bloqueio(data_hora, self.usuario_atual, self.bases_atuais, self.ambiente_atual)
+            QMessageBox.information(self, "Sucesso", f"Bloqueio para '{self.usuario_atual}' agendado com sucesso para {data_hora.strftime('%d/%m/%Y às %H:%M')} no ambiente {self.ambiente_atual}.")
             self.campo_usuario.clear()
             
         else:
@@ -384,7 +407,7 @@ class InterfaceBloqueio(QMainWindow):
         self.adicionar_log(mensagem)
         
         status_str = "Sucesso" if sucesso else "Falha"
-        historico_global.adicionar_registro(self.usuario_atual, self.bases_atuais, status_str, mensagem)
+        historico_global.adicionar_registro(self.usuario_atual, self.bases_atuais, self.ambiente_atual, status_str, mensagem)
 
         if sucesso:
             QMessageBox.information(self, "Sucesso", mensagem)

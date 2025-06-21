@@ -1,7 +1,8 @@
 import sys
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
                              QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,
-                             QMessageBox, QHeaderView, QTextEdit, QGroupBox, QWidget)
+                             QMessageBox, QHeaderView, QTextEdit, QGroupBox, QWidget,
+                             QComboBox)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from .gerenciador_bases import GerenciadorBases
@@ -48,6 +49,13 @@ class JanelaGerenciarBases(QDialog):
         self.campo_nome.setPlaceholderText("Ex: RIOENERGY")
         col_esq.addWidget(label_nome)
         col_esq.addWidget(self.campo_nome)
+        
+        # Ambiente
+        label_ambiente = QLabel("Ambiente:")
+        self.combo_ambiente = QComboBox()
+        self.combo_ambiente.addItems(["HML", "PROD"])
+        col_esq.addWidget(label_ambiente)
+        col_esq.addWidget(self.combo_ambiente)
         
         # URL da base
         label_url = QLabel("URL da Base:")
@@ -138,11 +146,11 @@ class JanelaGerenciarBases(QDialog):
         layout.addWidget(label_tabela)
         
         self.tabela_bases = QTableWidget()
-        self.tabela_bases.setColumnCount(4)
-        self.tabela_bases.setHorizontalHeaderLabels(["Nome", "URL", "Descrição", "Ações"])
+        self.tabela_bases.setColumnCount(5)
+        self.tabela_bases.setHorizontalHeaderLabels(["Nome", "Ambiente", "URL", "Descrição", "Ações"])
         self.tabela_bases.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.tabela_bases.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.tabela_bases.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.tabela_bases.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.tabela_bases.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.tabela_bases.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.tabela_bases.setStyleSheet("""
             QTableWidget {
@@ -194,11 +202,14 @@ class JanelaGerenciarBases(QDialog):
             # Nome
             self.tabela_bases.setItem(i, 0, QTableWidgetItem(base['nome']))
             
+            # Ambiente
+            self.tabela_bases.setItem(i, 1, QTableWidgetItem(base.get('ambiente', 'HML')))
+            
             # URL
-            self.tabela_bases.setItem(i, 1, QTableWidgetItem(base['url']))
+            self.tabela_bases.setItem(i, 2, QTableWidgetItem(base['url']))
             
             # Descrição
-            self.tabela_bases.setItem(i, 2, QTableWidgetItem(base.get('descricao', '')))
+            self.tabela_bases.setItem(i, 3, QTableWidgetItem(base.get('descricao', '')))
             
             # Botões de ação
             widget_acoes = QWidget()
@@ -241,19 +252,21 @@ class JanelaGerenciarBases(QDialog):
             layout_acoes.addWidget(botao_remover)
             layout_acoes.addStretch()
             
-            self.tabela_bases.setCellWidget(i, 3, widget_acoes)
+            self.tabela_bases.setCellWidget(i, 4, widget_acoes)
     
     def carregar_base_para_edicao(self, row):
         """Carrega os dados de uma base para edição"""
         nome = self.tabela_bases.item(row, 0).text()
-        url = self.tabela_bases.item(row, 1).text()
-        descricao = self.tabela_bases.item(row, 2).text()
+        ambiente = self.tabela_bases.item(row, 1).text()
+        url = self.tabela_bases.item(row, 2).text()
+        descricao = self.tabela_bases.item(row, 3).text()
         
         self.campo_nome.setText(nome)
+        self.combo_ambiente.setCurrentText(ambiente)
         self.campo_url.setText(url)
         self.campo_descricao.setPlainText(descricao)
         
-        self.base_selecionada = nome
+        self.base_selecionada = {'nome': nome, 'ambiente': ambiente}
         self.botao_adicionar.setEnabled(False)
         self.botao_editar.setEnabled(True)
     
@@ -261,19 +274,20 @@ class JanelaGerenciarBases(QDialog):
         """Quando uma base é selecionada na tabela"""
         current_row = self.tabela_bases.currentRow()
         if current_row >= 0:
-            self.base_selecionada = self.tabela_bases.item(current_row, 0).text()
+            self.base_selecionada = {'nome': self.tabela_bases.item(current_row, 0).text(), 'ambiente': self.tabela_bases.item(current_row, 1).text()}
     
     def adicionar_base(self):
         """Adiciona uma nova base"""
         nome = self.campo_nome.text().strip()
         url = self.campo_url.text().strip()
         descricao = self.campo_descricao.toPlainText().strip()
+        ambiente = self.combo_ambiente.currentText()
         
         if not nome or not url:
             QMessageBox.warning(self, "Aviso", "Nome e URL são obrigatórios!")
             return
         
-        if self.gerenciador.adicionar_base(nome, url, descricao):
+        if self.gerenciador.adicionar_base(nome, url, descricao, ambiente):
             QMessageBox.information(self, "Sucesso", f"Base '{nome}' adicionada com sucesso!")
             self.carregar_tabela()
             self.limpar_campos()
@@ -289,13 +303,14 @@ class JanelaGerenciarBases(QDialog):
         novo_nome = self.campo_nome.text().strip()
         nova_url = self.campo_url.text().strip()
         nova_descricao = self.campo_descricao.toPlainText().strip()
+        novo_ambiente = self.combo_ambiente.currentText()
         
         if not novo_nome or not nova_url:
             QMessageBox.warning(self, "Aviso", "Nome e URL são obrigatórios!")
             return
         
-        if self.gerenciador.editar_base(self.base_selecionada, novo_nome, nova_url, nova_descricao):
-            QMessageBox.information(self, "Sucesso", f"Base '{self.base_selecionada}' editada com sucesso!")
+        if self.gerenciador.editar_base(self.base_selecionada['nome'], self.base_selecionada['ambiente'], novo_nome, nova_url, nova_descricao, novo_ambiente):
+            QMessageBox.information(self, "Sucesso", f"Base '{self.base_selecionada['nome']}' editada com sucesso!")
             self.carregar_tabela()
             self.limpar_campos()
         else:
@@ -304,6 +319,7 @@ class JanelaGerenciarBases(QDialog):
     def remover_base(self, row):
         """Remove uma base"""
         nome = self.tabela_bases.item(row, 0).text()
+        ambiente = self.tabela_bases.item(row, 1).text()
         
         resposta = QMessageBox.question(
             self, 
@@ -313,10 +329,10 @@ class JanelaGerenciarBases(QDialog):
         )
         
         if resposta == QMessageBox.StandardButton.Yes:
-            if self.gerenciador.remover_base(nome):
+            if self.gerenciador.remover_base(nome, ambiente):
                 QMessageBox.information(self, "Sucesso", f"Base '{nome}' removida com sucesso!")
                 self.carregar_tabela()
-                if self.base_selecionada == nome:
+                if self.base_selecionada == {'nome': nome, 'ambiente': ambiente}:
                     self.limpar_campos()
             else:
                 QMessageBox.warning(self, "Erro", "Erro ao remover a base!")
@@ -326,6 +342,7 @@ class JanelaGerenciarBases(QDialog):
         self.campo_nome.clear()
         self.campo_url.clear()
         self.campo_descricao.clear()
+        self.combo_ambiente.setCurrentText("HML")
         self.base_selecionada = None
         self.botao_adicionar.setEnabled(True)
         self.botao_editar.setEnabled(False)

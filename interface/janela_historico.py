@@ -35,13 +35,14 @@ class JanelaHistorico(QDialog):
         layout.addLayout(filtro_layout)
 
         self.tabela_historico = QTableWidget()
-        self.tabela_historico.setColumnCount(5)
-        self.tabela_historico.setHorizontalHeaderLabels(["Data/Hora", "Usuário", "Bases", "Status", "Detalhes"])
+        self.tabela_historico.setColumnCount(6)
+        self.tabela_historico.setHorizontalHeaderLabels(["Data/Hora", "Usuário", "Ambiente", "Bases", "Status", "Detalhes"])
         self.tabela_historico.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.tabela_historico.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.tabela_historico.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.tabela_historico.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-        self.tabela_historico.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.tabela_historico.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.tabela_historico.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.tabela_historico.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.tabela_historico.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         self.tabela_historico.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tabela_historico.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_historico.setWordWrap(True)
@@ -60,7 +61,7 @@ class JanelaHistorico(QDialog):
         self.tabela_historico.setSortingEnabled(False)
 
         for row, registro in enumerate(registros):
-            timestamp, usuario, bases_json, status, detalhes = registro
+            timestamp, usuario, bases_json, ambiente, status, detalhes = registro
             
             try:
                 bases_list = json.loads(bases_json)
@@ -70,16 +71,25 @@ class JanelaHistorico(QDialog):
 
             self.tabela_historico.setItem(row, 0, QTableWidgetItem(timestamp))
             self.tabela_historico.setItem(row, 1, QTableWidgetItem(usuario))
-            self.tabela_historico.setItem(row, 2, QTableWidgetItem(bases_str))
+            
+            ambiente_item = QTableWidgetItem(ambiente)
+            if ambiente == "PROD":
+                ambiente_item.setForeground(QColor("#C0392B")) # Vermelho
+                ambiente_item.setFont(QFont("Arial", 9, QFont.Weight.Bold))
+            else:
+                ambiente_item.setForeground(QColor("#2980B9")) # Azul
+            self.tabela_historico.setItem(row, 2, ambiente_item)
+
+            self.tabela_historico.setItem(row, 3, QTableWidgetItem(bases_str))
             
             status_item = QTableWidgetItem(status)
             if "Falha" in status or "Erro" in status:
                 status_item.setForeground(QColor("red"))
             else:
                 status_item.setForeground(QColor("#006400")) # DarkGreen
-            self.tabela_historico.setItem(row, 3, status_item)
+            self.tabela_historico.setItem(row, 4, status_item)
 
-            self.tabela_historico.setItem(row, 4, QTableWidgetItem(detalhes))
+            self.tabela_historico.setItem(row, 5, QTableWidgetItem(detalhes))
 
         self.tabela_historico.resizeRowsToContents()
         self.tabela_historico.setSortingEnabled(True)
